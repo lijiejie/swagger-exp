@@ -7,7 +7,7 @@
 * 分析接口是否存在敏感参数，例如url参数，容易引入外网的SSRF漏洞
 * 检测 API认证绕过漏洞
 * 在本地监听一个Web Server，打开Swagger UI界面，供分析接口使用
-* 使用Chrome打开本地Web服务器，并禁用CROS，解决部分API接口无法跨域请求的问题
+* 使用Chrome打开本地Web服务器，并禁用CORS，解决部分API接口无法跨域请求的问题
 * 当工具检测到HTTP认证绕过漏洞时，本地服务器拦截API文档，修改path，以便直接在Swagger UI中进行测试
 
 ## 扫描器改进建议
