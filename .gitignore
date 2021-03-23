@@ -1,0 +1,5 @@
+.idea/
+chromeSwagger/
+api_summary.txt
+api-docs.json
+*.pyc
