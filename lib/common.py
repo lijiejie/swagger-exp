@@ -1,15 +1,18 @@
 # -*- encoding: utf-8 -*-
 
-import _winreg
 import os
 import platform
 
 
 def get_chrome_path_win():
+    try:
+        import _winreg as reg
+    except Exception as e:
+        import winreg as reg
     # HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe\
-    conn = _winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE)
-    _path = _winreg.QueryValue(conn, 'Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe\\')
-    _winreg.CloseKey(conn)
+    conn = reg.ConnectRegistry(None, reg.HKEY_LOCAL_MACHINE)
+    _path = reg.QueryValue(conn, 'Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe\\')
+    reg.CloseKey(conn)
     if not os.path.exists(_path):
         raise Exception('chrome.exe not found.')
     return _path

@@ -7,14 +7,21 @@ import sys
 import requests
 import json
 import time
-import urlparse
 import codecs
-import os
+import subprocess
 import threading
 import copy
-from SocketServer import ThreadingMixIn
-from SimpleHTTPServer import SimpleHTTPRequestHandler
-from BaseHTTPServer import HTTPServer
+
+try:
+    import urlparse
+    from SocketServer import ThreadingMixIn
+    from SimpleHTTPServer import SimpleHTTPRequestHandler
+    from BaseHTTPServer import HTTPServer
+except Exception as e:
+    from socketserver import ThreadingMixIn
+    import urllib
+    from http.server import SimpleHTTPRequestHandler, HTTPServer
+
 from lib.common import get_chrome_path
 
 
@@ -178,19 +185,33 @@ class RequestHandler(SimpleHTTPRequestHandler):
         return SimpleHTTPRequestHandler.do_GET(self)
 
 
-def chrome_open(chrome_path, url):
-    time.sleep(1.0)
+def chrome_open(chrome_path, url, server):
+    time.sleep(2.0)
     if chrome_path:
         url_txt = url+'/api_summary.txt' if len(sys.argv) > 1 else ''
-        os.system('"%s" --disable-web-security --new-window--disable-gpu --user-data-dir=./chromeSwagger %s %s' % (
-            chrome_path, url, url_txt
-        ))
+        cmd = '"%s" --disable-web-security --new-window--disable-gpu --user-data-dir=./chromeSwagger %s %s' % (
+            chrome_path, url, url_txt)
+        p = subprocess.Popen(cmd, shell=True,
+                             stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+                             creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+        while p.poll() is None:
+            time.sleep(1.0)
+
+        server.shutdown()
+        print_msg('Server shutdown.')
+        if out_file:
+            out_file.flush()
+            out_file.close()
 
 
 if __name__ == '__main__':
     out_file = codecs.open('api_summary.txt', 'w', encoding='utf-8')
     if len(sys.argv) > 1:
-        if urlparse.urlparse(sys.argv[1]).scheme.lower() == 'https':
+        try:
+            _scheme = urlparse.urlparse(sys.argv[1]).scheme.lower()
+        except Exception as e:
+            _scheme = urllib.parse.urlparse(sys.argv[1]).scheme.lower()
+        if _scheme.lower() == 'https':
             scheme = 'https'
         find_all_api_set(sys.argv[1])
         for url in api_set_list:
@@ -204,15 +225,6 @@ if __name__ == '__main__':
         print_msg('[ERROR] Chrome executable not found')
     else:
         print_msg('Open Swagger UI with chrome')
-        threading.Thread(target=chrome_open, args=(chrome_path, url)).start()
+        threading.Thread(target=chrome_open, args=(chrome_path, url, server)).start()
 
-    if out_file:
-        out_file.flush()
-        out_file.close()
-
-    while True:
-        try:
-            sys.stdout.flush()
-            server.handle_request()
-        except KeyboardInterrupt as e:
-            print('Stopped')
+    server.serve_forever()
