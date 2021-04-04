@@ -189,8 +189,8 @@ def chrome_open(chrome_path, url, server):
     time.sleep(2.0)
     if chrome_path:
         url_txt = url+'/api_summary.txt' if len(sys.argv) > 1 else ''
-        cmd = '"%s" --disable-web-security --new-window--disable-gpu --user-data-dir=./chromeSwagger %s %s' % (
-            chrome_path, url, url_txt)
+        cmd = '"%s" --disable-web-security --no-sandbox --new-window--disable-gpu ' \
+              '--user-data-dir=./chromeSwagger %s %s' % (chrome_path, url, url_txt)
         p = subprocess.Popen(cmd, shell=True,
                              stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         while p.poll() is None:
