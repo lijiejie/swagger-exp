@@ -192,8 +192,7 @@ def chrome_open(chrome_path, url, server):
         cmd = '"%s" --disable-web-security --new-window--disable-gpu --user-data-dir=./chromeSwagger %s %s' % (
             chrome_path, url, url_txt)
         p = subprocess.Popen(cmd, shell=True,
-                             stderr=subprocess.PIPE, stdout=subprocess.PIPE,
-                             creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+                             stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         while p.poll() is None:
             time.sleep(1.0)
 
