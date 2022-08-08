@@ -11,6 +11,7 @@ import codecs
 import subprocess
 import threading
 import copy
+import os
 
 try:
     import urlparse
@@ -18,8 +19,8 @@ try:
     from SimpleHTTPServer import SimpleHTTPRequestHandler
     from BaseHTTPServer import HTTPServer
 except Exception as e:
-    from socketserver import ThreadingMixIn
     import urllib
+    from socketserver import ThreadingMixIn
     from http.server import SimpleHTTPRequestHandler, HTTPServer
 
 from lib.common import get_chrome_path
@@ -188,11 +189,12 @@ class RequestHandler(SimpleHTTPRequestHandler):
 def chrome_open(chrome_path, url, server):
     time.sleep(2.0)
     if chrome_path:
-        url_txt = url+'/api_summary.txt' if len(sys.argv) > 1 else ''
+        url_txt = url + '/api_summary.txt' if len(sys.argv) > 1 else ''
+        cwd = os.path.split(os.path.abspath(__file__))[0]
+        user_data_dir = os.path.abspath(os.path.join(cwd, 'chromeSwagger'))
         cmd = '"%s" --disable-web-security --no-sandbox --new-window--disable-gpu ' \
-              '--user-data-dir=./chromeSwagger %s %s' % (chrome_path, url, url_txt)
-        p = subprocess.Popen(cmd, shell=True,
-                             stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+              '--user-data-dir=%s %s %s' % (chrome_path, user_data_dir, url, url_txt)
+        p = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         while p.poll() is None:
             time.sleep(1.0)
 

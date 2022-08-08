@@ -11,6 +11,7 @@
 * 当工具检测到HTTP认证绕过漏洞时，本地服务器拦截API文档，修改path，以便直接在Swagger UI中进行测试
 
 ## ChangeLog
+* [2022-08-08] Fix chromeSwagger permission error
 * [2021-04-04] 支持 Python3 
 
 ## 扫描器改进建议
