@@ -218,7 +218,7 @@ if __name__ == '__main__':
         for url in api_set_list:
             process_doc(url)
 
-    server = ThreadingSimpleServer(('', 0), RequestHandler)
+    server = ThreadingSimpleServer(('127.0.0.1', 0), RequestHandler)
     url = 'http://127.0.0.1:%s' % server.server_port
     print_msg('Swagger UI Server on: %s' % url)
     chrome_path = get_chrome_path()
