@@ -42,21 +42,22 @@ def print_msg(msg):
 def find_all_api_set(start_url):
     try:
         text = requests.get(start_url, headers=headers, verify=False).text
-        if text.strip().startswith('{"swagger":"') or text.startswith('{"openapi":"'):    # from swagger.json
+        json_doc = json.loads(text)
+        if text.strip().startswith('{"swagger":"') or "openapi" in json_doc or "swagger" in json_doc:
+            # from swagger.json
             api_set_list.append(start_url)
             print_msg('[OK] [API set] %s' % start_url)
             with codecs.open('api-docs.json', 'w', encoding='utf-8') as f:
                 f.write(text)
         elif text.find('"swaggerVersion"') > 0:    # from /swagger-resources/
             base_url = start_url[:start_url.find('/swagger-resources')]
-            json_doc = json.loads(text)
             for item in json_doc:
                 url = base_url + item['location']
                 find_all_api_set(url)
         else:
             print_msg('[FAIL] Invalid API Doc: %s' % start_url)
     except Exception as e:
-        print_msg('[find_all_api_set] process error %s' % e)
+        print_msg('[find_all_api_set] process error %s' % str(e))
 
 
 def process_doc(url):
@@ -64,7 +65,7 @@ def process_doc(url):
         json_doc = requests.get(url, headers=headers, verify=False).json()
         if 'host' in json_doc:
             base_url = scheme + '://' + json_doc['host'] + json_doc['basePath']
-        if 'servers' in json_doc:
+        elif 'servers' in json_doc:
             server_url = json_doc['servers'][0]['url']
             if server_url.lower().startswith('http'):
                 base_url = server_url
@@ -74,6 +75,8 @@ def process_doc(url):
                 json_doc['servers'][0]['url'] = base_url
                 with codecs.open('api-docs.json', 'w', encoding='utf-8') as f:
                     f.write(json.dumps(json_doc, indent=4))
+        else:
+            base_url = scheme + '://' + urlparse.urlparse(url, 'http').netloc
         base_url = base_url.rstrip('/')
         for path in json_doc['paths']:
 
