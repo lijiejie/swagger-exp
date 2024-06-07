@@ -19,8 +19,9 @@ def get_chrome_path_win():
 
 
 def get_chrome_path_linux():
-    folders = ['/usr/local/sbin', '/usr/local/bin', '/usr/sbin', '/usr/bin', '/sbin', '/bin', '/opt/google/','/Applications/Google Chrome.app/Contents/MacOS']
-    names = ['google-chrome', 'chrome', 'chromium', 'chromium-browser','Google Chrome']
+    folders = ['/usr/local/sbin', '/usr/local/bin', '/usr/sbin', '/usr/bin', '/sbin', '/bin', '/opt/google/',
+               '/Applications/Google Chrome.app/Contents/MacOS']
+    names = ['google-chrome', 'chrome', 'chromium', 'chromium-browser', 'Google Chrome']
     for folder in folders:
         for name in names:
             if os.path.exists(os.path.join(folder, name)):
