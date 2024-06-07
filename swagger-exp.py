@@ -12,7 +12,7 @@ import subprocess
 import threading
 import copy
 import os
-
+from lib.common import get_chrome_path
 try:
     import urlparse
     from SocketServer import ThreadingMixIn
@@ -23,8 +23,6 @@ except Exception as e:
     from socketserver import ThreadingMixIn
     from http.server import SimpleHTTPRequestHandler, HTTPServer
 
-from lib.common import get_chrome_path
-
 
 requests.packages.urllib3.disable_warnings()
 api_set_list = []    # ALL API SET
@@ -34,7 +32,7 @@ auth_bypass_detected = False
 
 
 def print_msg(msg):
-    if msg.startswith('[GET] ') or msg.startswith('[POST] '):
+    if msg.startswith('[GET] ') or msg.startswith('[POST] ') or msg.startswith('[PUT] '):
         out_file.write('\n')
     _msg = '[%s] %s' % (time.strftime('%H:%M:%S', time.localtime()), msg)
     print(_msg)
@@ -44,7 +42,7 @@ def print_msg(msg):
 def find_all_api_set(start_url):
     try:
         text = requests.get(start_url, headers=headers, verify=False).text
-        if text.strip().startswith('{"swagger":"'):    # from swagger.json
+        if text.strip().startswith('{"swagger":"') or text.startswith('{"openapi":"'):    # from swagger.json
             api_set_list.append(start_url)
             print_msg('[OK] [API set] %s' % start_url)
             with codecs.open('api-docs.json', 'w', encoding='utf-8') as f:
@@ -64,7 +62,18 @@ def find_all_api_set(start_url):
 def process_doc(url):
     try:
         json_doc = requests.get(url, headers=headers, verify=False).json()
-        base_url = scheme + '://' + json_doc['host'] + json_doc['basePath']
+        if 'host' in json_doc:
+            base_url = scheme + '://' + json_doc['host'] + json_doc['basePath']
+        if 'servers' in json_doc:
+            server_url = json_doc['servers'][0]['url']
+            if server_url.lower().startswith('http'):
+                base_url = server_url
+            else:
+                base_url = scheme + '://' + urlparse.urlparse(url, 'http').netloc + server_url
+                # update base_url to absolute url
+                json_doc['servers'][0]['url'] = base_url
+                with codecs.open('api-docs.json', 'w', encoding='utf-8') as f:
+                    f.write(json.dumps(json_doc, indent=4))
         base_url = base_url.rstrip('/')
         for path in json_doc['paths']:
 
@@ -99,7 +108,7 @@ def process_doc(url):
                         else:
                             para_format = parameter['type'] if 'type' in parameter else 'unkonwn'
 
-                        is_required = '' if parameter['required'] else '*'
+                        is_required = '' if 'required' in parameter and parameter['required'] else '*'
                         params_str += '&%s=%s%s%s' % (para_name, is_required, para_format, is_required)
                     params_str = params_str.strip('&')
                     if sensitive_params:

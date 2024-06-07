@@ -1,4 +1,4 @@
-# **Swagger API Exploit 1.1**
+# **Swagger API Exploit 1.2**
 
 这是一个 Swagger REST API 信息泄露利用工具。 主要功能有：
 
@@ -11,6 +11,7 @@
 * 当工具检测到HTTP认证绕过漏洞时，本地服务器拦截API文档，修改path，以便直接在Swagger UI中进行测试
 
 ## ChangeLog
+* [2024-06-07] 增加支持 OpenAPI 3.0
 * [2022-08-08] Fix chromeSwagger permission error
 * [2021-04-04] 支持 Python3 
 
